@@ -1,4 +1,4 @@
-package io.liwei.fullstack.nats.examples;
+package io.liwei.fullstack.examples.nats.streaming;
 
 import io.nats.client.Connection;
 import io.nats.client.Nats;

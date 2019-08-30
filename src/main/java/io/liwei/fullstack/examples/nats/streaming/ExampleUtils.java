@@ -37,14 +37,21 @@ public class ExampleUtils {
     private static String KEY_PASSWORD;
     private static String ALGORITHM = "SunX509";
 
-    public static io.nats.streaming.Options buildOpts(String serverUrls) throws Exception {
+    /**
+     * @param urls Nats streaming 单机/集群URL
+     *             单机:字符串 例如:tls://server:4222
+     *             集群: 多个地址以英文半角逗号隔开 例如: tls://server1:4222,tls://server2:4222,tls://server3:4222
+     * @throws Exception 创建Nats客户端发生异常时抛出
+     * @author veily
+     */
+    public static io.nats.streaming.Options buildOpts(String urls) throws Exception {
         io.nats.streaming.Options opts = NatsStreaming.defaultOptions();
         Connection nc = null;
-        if (serverUrls != null) {
-            if (serverUrls.startsWith("tls://")) {
-                nc = Nats.connect(createClusterTLSExampleOptions(serverUrls, true));
+        if (urls != null) {
+            if (urls.startsWith("tls://")) {
+                nc = Nats.connect(createClusterTLSExampleOptions(urls, true));
             } else {
-                nc = Nats.connect(createExampleOptions(serverUrls,
+                nc = Nats.connect(createExampleOptions(urls,
                         true, true, false));
             }
         }
@@ -67,18 +74,28 @@ public class ExampleUtils {
         return createExampleOptions(serverUrls, true, allowReconnect, true);
     }
 
-    public static Options createExampleOptions(String servers,
+    /**
+     * @param urls      服务器地址:
+     *                  单机:字符串 例如:tls://server:4222
+     *                  集群: 多个地址以英文半角逗号隔开 例如: tls://server1:4222,tls://server2:4222,tls://server3:4222
+     * @param isCluster nats streaming server是集群模式时 传入 true
+     * @param isTLS     nats streaming server开启TLS时 传入true
+     * @return nats streaming options
+     * @throws Exception 创建ssl上下文发生异常时抛出
+     * @author veily
+     */
+    public static Options createExampleOptions(String urls,
                                                boolean isCluster,
                                                boolean allowReconnect,
                                                boolean isTLS) throws Exception {
         Options.Builder builder = new Options.Builder();
         if (isCluster) {
-            builder.servers(servers.split(","));
+            builder.servers(urls.split(","));
         } else {
-            builder.server(servers);
+            builder.server(urls);
         }
         if (isTLS) {
-//            SSL
+            //使用自定义SSL Context
             builder.sslContext(createContext());
         }
         builder.

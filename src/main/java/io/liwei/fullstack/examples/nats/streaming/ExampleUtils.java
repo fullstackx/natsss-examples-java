@@ -62,14 +62,24 @@ public class ExampleUtils {
         return opts;
     }
 
-    public static void initKeyStore(String keyPath, String keyPwd, String trustStorePath, String trustPwd) {
-        KEYSTORE_PATH = keyPath;
+    /**
+     * @param keyStorePath   keystore file path
+     * @param keyStorePwd    keystore password
+     * @param trustStorePath truststore file path
+     * @param trustStorePwd  truststore password
+     */
+
+    public static void initKeyStore(String keyStorePath,
+                                    String keyStorePwd,
+                                    String trustStorePath,
+                                    String trustStorePwd) {
+        KEYSTORE_PATH = keyStorePath;
         TRUSTSTORE_PATH = trustStorePath;
-        KEY_PASSWORD = keyPwd;
-        STORE_PASSWORD = trustPwd;
+        KEY_PASSWORD = keyStorePwd;
+        STORE_PASSWORD = trustStorePwd;
     }
 
-    public static Options createClusterTLSExampleOptions(
+    private static Options createClusterTLSExampleOptions(
             String serverUrls, boolean allowReconnect) throws Exception {
         return createExampleOptions(serverUrls, true, allowReconnect, true);
     }
@@ -84,10 +94,10 @@ public class ExampleUtils {
      * @throws Exception 创建ssl上下文发生异常时抛出
      * @author veily
      */
-    public static Options createExampleOptions(String urls,
-                                               boolean isCluster,
-                                               boolean allowReconnect,
-                                               boolean isTLS) throws Exception {
+    private static Options createExampleOptions(String urls,
+                                                boolean isCluster,
+                                                boolean allowReconnect,
+                                                boolean isTLS) throws Exception {
         Options.Builder builder = new Options.Builder();
         if (isCluster) {
             builder.servers(urls.split(","));

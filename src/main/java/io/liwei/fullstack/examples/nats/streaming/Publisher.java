@@ -203,13 +203,8 @@ public class Publisher {
 
 
     public static void main(String[] args) throws Exception {
-        if (args == null || args.length < 2) {
-            throw new IllegalArgumentException("must supply at least subject and msg");
-        }
-
-        Publisher publisher = new Publisher(args);
         try {
-            publisher.run();
+            new Publisher(args).run();
         } catch (IllegalArgumentException e) {
             System.out.flush();
             System.err.println(e.getMessage());
@@ -217,7 +212,6 @@ public class Publisher {
             System.err.flush();
             throw e;
         }
-
     }
 
 

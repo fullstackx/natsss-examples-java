@@ -25,6 +25,7 @@ import io.nats.client.Consumer;
 import io.nats.client.ErrorListener;
 import io.nats.client.Nats;
 import io.nats.client.Options;
+import io.nats.streaming.NatsStreaming;
 
 import javax.net.ssl.*;
 
@@ -35,6 +36,24 @@ public class ExampleUtils {
     private static String STORE_PASSWORD;
     private static String KEY_PASSWORD;
     private static String ALGORITHM = "SunX509";
+
+    public static io.nats.streaming.Options buildOpts(String serverUrls) throws Exception {
+        io.nats.streaming.Options opts = NatsStreaming.defaultOptions();
+        Connection nc = null;
+        if (serverUrls != null) {
+            if (serverUrls.startsWith("tls://")) {
+                nc = Nats.connect(createClusterTLSExampleOptions(serverUrls, true));
+            } else {
+                nc = Nats.connect(createExampleOptions(serverUrls,
+                        true, true, false));
+            }
+        }
+
+        if (nc != null) {
+            opts = new io.nats.streaming.Options.Builder().natsConn(nc).build();
+        }
+        return opts;
+    }
 
     public static void initKeyStore(String keyPath, String keyPwd, String trustStorePath, String trustPwd) {
         KEYSTORE_PATH = keyPath;

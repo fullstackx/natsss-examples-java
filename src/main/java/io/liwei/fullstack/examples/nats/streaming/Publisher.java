@@ -1,7 +1,5 @@
 package io.liwei.fullstack.examples.nats.streaming;
 
-import io.nats.client.Connection;
-import io.nats.client.Nats;
 import io.nats.streaming.AckHandler;
 import io.nats.streaming.NatsStreaming;
 import io.nats.streaming.Options;
@@ -18,28 +16,31 @@ public class Publisher {
 
     private String keystorePath;
     private String truststorePath;
-    private String storePassword;
-    private String keyPassword;
+    private String trustStorePassword;
+    private String keyStorePassword;
     private String serverUrls;
-    private String clusterId = "matrixcluster";
+    private String clusterId = "test-cluster";
+    private String clientId = "test-client";
     private String subject = "foo";
     private String payloadString = "bar";
-
-    private String clientId = "testJavaPub";
     private boolean async;
 
 
     private static final String usageString =
             "\nUsage: java Publisher [options] <subject> <message>\n\nOptions:\n"
-                    + "    -s, --server   <urls>           NATS Streaming server URL(s)\n"
-                    + "    -c, --cluster  <cluster name>   NATS Streaming cluster name\n"
-                    + "    -id,--clientid <client ID>      NATS Streaming client ID\n"
-                    + "    -a, --async                     Asynchronous publish mode";
+                    + "    -s, --server   <urls>                                 NATS Streaming server URL(s)\n"
+                    + "    -c, --cluster  <cluster name>                         NATS Streaming cluster name\n"
+                    + "    -id,--clientid <client ID>                            NATS Streaming client ID\n"
+                    + "    -a, --async                                           Asynchronous publish mode\n"
+                    + "TLS Options:                                             \n"
+                    + "    -ks,--keystore <keystore path>                        NATS Streaming client tls JKS format cert \n"
+                    + "    -ks_pwd,--keystore_password <keystore password>       NATS Streaming client tls cert (JKS) password \n"
+                    + "    -ts,--truststore <truststore path>                    NATS Streaming client tls root ca (JKS) \n"
+                    + "    -ts_pwd,--truststore_password <truststore password>   NATS Streaming client tls root ca (JKS) password";
+
 
     public Publisher(String[] args) {
         parseArgs(args);
-        ExampleUtils.initKeyStore(keystorePath, keyPassword, truststorePath, storePassword);
-
     }
 
     private static void usage() {
@@ -47,22 +48,8 @@ public class Publisher {
     }
 
     public void run() throws Exception {
-
-        Options opts = NatsStreaming.defaultOptions();
-
-        Connection nc;
-        if (serverUrls.startsWith("tls://")) {
-            nc = Nats.connect(ExampleUtils.createClusterTLSExampleOptions(serverUrls, true));
-        } else {
-            nc = Nats.connect(ExampleUtils.createExampleOptions(serverUrls,
-                    true, true, false));
-        }
-
-        if (nc != null) {
-            opts = new Options.Builder().natsConn(nc).build();
-        }
-
-        System.out.println(serverUrls);
+        ExampleUtils.initKeyStore(keystorePath, keyStorePassword, truststorePath, trustStorePassword);
+        Options opts = ExampleUtils.buildOpts(serverUrls);
         try (StreamingConnection sc = NatsStreaming.connect(clusterId, clientId, opts)) {
             final CountDownLatch latch = new CountDownLatch(1);
             final String[] guid = new String[1];
@@ -172,7 +159,7 @@ public class Publisher {
                         throw new IllegalArgumentException(arg + " requires an argument");
                     }
                     it.remove();
-                    keyPassword = it.next();
+                    keyStorePassword = it.next();
                     it.remove();
                     continue;
                 case "-ts_pwd":
@@ -181,7 +168,7 @@ public class Publisher {
                         throw new IllegalArgumentException(arg + " requires an argument");
                     }
                     it.remove();
-                    storePassword = it.next();
+                    trustStorePassword = it.next();
                     it.remove();
                     continue;
                 case "-c":
